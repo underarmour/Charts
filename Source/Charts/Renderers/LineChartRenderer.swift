@@ -326,8 +326,10 @@ open class LineChartRenderer: LineRadarRenderer
         
         context.setLineCap(dataSet.lineCapType)
 
+        let path  = CGMutablePath()
+        
         // more than 1 color
-        if dataSet.colors.count > 1
+        if dataSet.colors.count > 1 && !dataSet.isDrawGradientEnabled
         {
             if _lineSegments.count != pointsPerEntryPair
             {
@@ -416,11 +418,13 @@ open class LineChartRenderer: LineRadarRenderer
                     if firstPoint
                     {
                         context.move(to: pt)
+                        path.move(to: pt)
                         firstPoint = false
                     }
                     else
                     {
                         context.addLine(to: pt)
+                        path.addLine(to: pt)
                     }
                     
                     if isDrawSteppedEnabled
@@ -435,6 +439,11 @@ open class LineChartRenderer: LineRadarRenderer
                             x: CGFloat(e2.x),
                             y: CGFloat(e2.y * phaseY)
                         ).applying(valueToPixelMatrix))
+                    
+                    path.addLine(to: CGPoint(
+                        x: CGFloat(e2.x),
+                        y: CGFloat(e2.y * phaseY)
+                        ).applying(valueToPixelMatrix))
                 }
                 
                 if !firstPoint
@@ -443,6 +452,10 @@ open class LineChartRenderer: LineRadarRenderer
                     context.strokePath()
                 }
             }
+        }
+        
+        if dataSet.isDrawGradientEnabled {
+            drawGradientLine(context: context, dataSet: dataSet, spline: path, matrix: valueToPixelMatrix)
         }
         
         context.restoreGState()
